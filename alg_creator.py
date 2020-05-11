@@ -21,7 +21,7 @@ def print_route(route):
 # and then apply the original PSO algorithm.
 # The variable best contains the best particle ever found (it is known as gbest in the original algorithm).
 def run_pso(instance_name, particle_size, pop_size, max_iteration,
-            cognitive_coef, social_coef, speed_min=-3, speed_max=3):
+            cognitive_coef, social_coef, s_limit=3):
 
     instance = load_problem_instance(instance_name)
 
@@ -31,7 +31,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
 
     toolbox = base.Toolbox()
     toolbox.register("particle", generate_particle,
-                     size=particle_size, val_min=1, val_max=particle_size, s_min=speed_min, s_max=speed_max)
+                     size=particle_size, val_min=1, val_max=particle_size, s_min=-s_limit, s_max=s_limit)
     toolbox.register("population", tools.initRepeat, list, toolbox.particle)
     toolbox.register("update", update_particle, phi1=cognitive_coef, phi2=social_coef)
     toolbox.register('evaluate', calculate_fitness, data=instance)
@@ -61,7 +61,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
         for part in pop:
             toolbox.update(part, best)
 
-        # Gather all the fitnesses in one list and print the stats
+        # Gather all the stats in one list and print them
         logbook.record(gen=g, evals=len(pop), **stats.compile(pop))
         print(logbook.stream)
 
@@ -117,9 +117,9 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
     # Begin the evolution
     for gen in range(n_gen):
         # Keep the best individual
-        elite = tools.selBest(pop, 1)
+        elite_ind = tools.selBest(pop, 1)
 
-        # Roulette select the rest 90% of worst offsprings
+        # Choose 10% of best offspring, roulette select the rest 90% of rest
         offspring = tools.selBest(pop, int(numpy.ceil(pop_size * 0.1)))
         offspring = list(map(toolbox.clone, offspring))
         offspring_roulette = toolbox.select(pop, int(numpy.floor(pop_size * 0.9)) - 1)
@@ -139,8 +139,9 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
                 toolbox.mutate(mutant)
                 del mutant.fitness.values
 
+        # Add elite member
+        offspring.extend(elite_ind)
         # Replace population by offspring
-        offspring.extend(elite)
         pop[:] = offspring
 
         # Evaluate new population

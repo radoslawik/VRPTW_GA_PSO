@@ -20,6 +20,7 @@ if __name__ == '__main__':
     particles_pop_size = 80
     social_acceleration = 2
     cognitive_acceleration = 2
+    speed_limit = 3
 
     population_size = 150
     crossover_prob = 0.85
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     if alg_name == "PSO":
         res = run_pso(instance_name=problem_name, particle_size=customers_count, pop_size=particles_pop_size,
                       max_iteration=max_generations, cognitive_coef=cognitive_acceleration,
-                      social_coef=social_acceleration)
+                      social_coef=social_acceleration, s_limit=speed_limit)
 
     elif alg_name == "GA":
         res = run_ga(instance_name=problem_name, individual_size=customers_count, pop_size=population_size,
@@ -37,16 +38,3 @@ if __name__ == '__main__':
     else:
         print("invalid algorithm")
         sys.exit()
-
-    instance = load_problem_instance(problem_name)
-
-    '''
-    for single_route in res:
-        print("new route")
-        for customer_id in single_route:
-            print(f'new customer id: {customer_id}')
-            coordinates = [instance[F'C_{customer_id}'][COORDINATES][X_COORD],
-                           instance[F'C_{customer_id}'][COORDINATES][Y_COORD]]
-            for cord in coordinates:
-                print(cord)
-    '''

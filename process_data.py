@@ -66,7 +66,7 @@ def load_problem_instance(problem_name='R101'):
             else:
                 pass
 
-        customers = [DEPART] + [F'C_{x}' for x in range(1, cust_num)]
+        customers = [DEPART] + [F'C_{x}' for x in range(1, cust_num+1)]
         parsed_data[DISTANCE_MATRIX] = \
             [[calculate_distance(parsed_data[c1], parsed_data[c2]) for c1 in customers] for c2 in customers]
 
