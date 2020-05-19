@@ -20,11 +20,14 @@ if __name__ == '__main__':
     particles_pop_size = 80
     social_acceleration = 2
     cognitive_acceleration = 2
-    speed_limit = 3
+    speed_limit = 2
 
     population_size = 150
     crossover_prob = 0.85
     mutation_prob = 0.1
+
+    print('Problem name: ' + problem_name)
+    print('Algorithm: ' + alg_name)
 
     if alg_name == "PSO":
         res = run_pso(instance_name=problem_name, particle_size=customers_count, pop_size=particles_pop_size,

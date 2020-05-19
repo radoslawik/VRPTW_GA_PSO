@@ -1,6 +1,7 @@
 from core_funs import *
 from deap import base, creator, tools, algorithms
 import numpy
+import operator
 
 
 # printing the solution
@@ -35,6 +36,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     toolbox.register("population", tools.initRepeat, list, toolbox.particle)
     toolbox.register("update", update_particle, phi1=cognitive_coef, phi2=social_coef)
     toolbox.register('evaluate', calculate_fitness, data=instance)
+    toolbox.register('select', tools.selRoulette)
 
     pop = toolbox.population(n=pop_size)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -50,19 +52,31 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
 
     print('Start of evolution')
     for g in range(max_iteration):
+
         for part in pop:
             part.fitness.values = toolbox.evaluate(part)
+
+        elite_ind = tools.selBest(pop, 1)
+        mod_pop = toolbox.select(pop, pop_size - 1)
+        # mod_pop = toolbox.select(pop, pop_size)
+        mod_pop = list(map(toolbox.clone, mod_pop))
+
+        for part in mod_pop:
             if not part.best or part.best.fitness < part.fitness:
                 part.best = creator.Particle(part)
                 part.best.fitness.values = part.fitness.values
             if not best or best.fitness < part.fitness:
                 best = creator.Particle(part)
                 best.fitness.values = part.fitness.values
-        for part in pop:
+
+        for part in mod_pop:
             toolbox.update(part, best)
 
+        mod_pop.extend(elite_ind)
+        pop[:] = mod_pop
+
         # Gather all the stats in one list and print them
-        logbook.record(gen=g, evals=len(pop), **stats.compile(pop))
+        logbook.record(gen=g+1, evals=len(pop), **stats.compile(pop))
         print(logbook.stream)
 
     print('End of evolution')
@@ -148,10 +162,11 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
         for ind in pop:
             ind.fitness.values = toolbox.evaluate(ind)
 
-        logbook.record(gen=gen, evals=len(offspring), **stats.compile(offspring))
+        logbook.record(gen=gen+1, evals=len(offspring), **stats.compile(offspring))
         print(logbook.stream)
 
     print('End of evolution')
+    print('Solution statistics')
     best_ind = tools.selBest(pop, 1)[0]
     print(f'Best individual: {best_ind}')
     route = create_route_from_ind(best_ind, instance)

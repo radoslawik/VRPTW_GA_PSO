@@ -163,6 +163,14 @@ def generate_particle(size, val_min, val_max, s_min, s_max):
     return part
 
 
+def create_particle(vals, s_min, s_max):
+    part = creator.Particle(vals)
+    part.speed = [random.uniform(s_min, s_max) for _ in range(len(vals))]
+    part.smin = s_min
+    part.smax = s_max
+    return part
+
+
 # Change floats to integers and deal with duplicates
 def validate_particle(particle):
     validated_part = []
