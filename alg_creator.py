@@ -1,7 +1,7 @@
 from core_funs import *
 from deap import base, creator, tools, algorithms
 import numpy
-import operator
+import time
 
 
 # printing the solution
@@ -49,12 +49,19 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     logbook.header = ["gen", "evals"] + stats.fields
 
     best = None
+    iter_num = 0
+    previous_best = 0
 
-    print('Start of evolution')
+    print('### EVOLUTION START ###')
+    start = time.time()
+
     for g in range(max_iteration):
 
         for part in pop:
             part.fitness.values = toolbox.evaluate(part)
+            if part.fitness.values[0] > previous_best:
+                previous_best = part.fitness.values[0]
+                iter_num = g + 1
 
         elite_ind = tools.selBest(pop, 1)
         mod_pop = toolbox.select(pop, pop_size - 1)
@@ -79,13 +86,16 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
         logbook.record(gen=g+1, evals=len(pop), **stats.compile(pop))
         print(logbook.stream)
 
-    print('End of evolution')
+    end = time.time()
+    print('### EVOLUTION END ###')
     best_ind = tools.selBest(pop, 1)[0]
     print(f'Best individual: {best_ind}')
     route = create_route_from_ind(best_ind, instance)
     print_route(route)
     print(f'Fitness: {best_ind.fitness.values[0]}')
     print(f'Total cost: { calculate_fitness(best_ind, instance)[1]}')
+    print(f'Found in (iteration): { iter_num }')
+    print(f'Execution time (s): { end-start }')
 
     return route
 
@@ -123,11 +133,16 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
     logbook = tools.Logbook()
     logbook.header = ["gen", "evals"] + stats.fields
 
+    iter_num = 0
+    previous_best = 0
+
+    print('### EVOLUTION START ###')
+    start = time.time()
+
     # Evaluate the entire population
     for ind in pop:
         ind.fitness.values = toolbox.evaluate(ind)
 
-    print('Start of evolution')
     # Begin the evolution
     for gen in range(n_gen):
         # Keep the best individual
@@ -161,17 +176,22 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
         # Evaluate new population
         for ind in pop:
             ind.fitness.values = toolbox.evaluate(ind)
+            if ind.fitness.values[0] > previous_best:
+                previous_best = ind.fitness.values[0]
+                iter_num = gen + 1
 
         logbook.record(gen=gen+1, evals=len(offspring), **stats.compile(offspring))
         print(logbook.stream)
 
-    print('End of evolution')
-    print('Solution statistics')
+    end = time.time()
+    print('### EVOLUTION END ###')
     best_ind = tools.selBest(pop, 1)[0]
     print(f'Best individual: {best_ind}')
     route = create_route_from_ind(best_ind, instance)
     print_route(route)
-    print(f'Fitness: {best_ind.fitness.values[0]}')
-    print(f'Total cost: { calculate_fitness(best_ind, instance)[1]}')
+    print(f'Fitness: { best_ind.fitness.values[0] }')
+    print(f'Total cost: { calculate_fitness(best_ind, instance)[1] }')
+    print(f'Found in (iteration): { iter_num }')
+    print(f'Execution time (s): { end - start }')
 
     return route
