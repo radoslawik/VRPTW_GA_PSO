@@ -5,6 +5,7 @@
 import random
 import operator
 import math
+import collections
 
 from deap import base, creator, tools
 from process_data import *
@@ -107,7 +108,7 @@ def calculate_fitness(individual, data):
 
 
 # Double point crossover
-def crossover_two_points(ind1, ind2):
+def crossover_pmx(ind1, ind2):
 
     ind_len = len(ind1)
     pos_ind1 = [0]*ind_len
@@ -171,20 +172,57 @@ def create_particle(vals, s_min, s_max):
     return part
 
 
+def remove_duplicates(vals):
+    duplic = [item for item, count in collections.Counter(vals).items() if count > 1]
+    uniq_part = []
+    offset = 0.001
+    count = [1] * len(duplic)
+    for val in vals:
+        if val in duplic:
+            ind = duplic.index(val)
+            val += offset * count[ind]
+            count[ind] += 1
+        uniq_part.append(val)
+
+    return uniq_part
+
+
 # Change floats to integers and deal with duplicates
 def validate_particle(particle):
+    unique_part = remove_duplicates(particle)
+    sorted_asc = sorted(unique_part, key=float)
     validated_part = []
-    sorted_asc = sorted(particle, key=float)
-    for val in particle:
+
+    if len(sorted_asc) > len(set(sorted_asc)):
+        print("problem")
+
+    for val in unique_part:
         index = sorted_asc.index(val)
         validated_part.append((index + 1))
 
     return validated_part
 
 
+def validate_particle2(particle):
+    swap_list = remove_duplicates(list(map(operator.add, list(range(1, len(particle)+1)), particle.speed)))
+    validated_part = []
+    validated_speed = []
+    sorted_asc = sorted(swap_list, key=float)
+
+    if len(sorted_asc) > len(set(sorted_asc)):
+        print("problem")
+    for val in swap_list:
+        index = sorted_asc.index(val)
+        validated_part.append(particle[index])
+        validated_speed.append(particle.speed[index])
+
+    return validated_part, validated_speed
+
 # The function updateParticle() first computes the speed,
 # then limits the speed values between smin and smax,
 # and finally computes the new particle position.
+
+
 def update_particle(part, best, phi1, phi2):
 
     u1 = (random.uniform(0, phi1) for _ in range(len(part)))
@@ -205,6 +243,8 @@ def update_particle(part, best, phi1, phi2):
 
     new_part = list(map(operator.add, part, part.speed))
     part[:] = validate_particle(new_part)
+
+    # part[:], part.speed[:] = validate_particle2(part)
 
 
 

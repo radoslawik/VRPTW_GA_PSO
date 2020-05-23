@@ -36,7 +36,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     toolbox.register("population", tools.initRepeat, list, toolbox.particle)
     toolbox.register("update", update_particle, phi1=cognitive_coef, phi2=social_coef)
     toolbox.register('evaluate', calculate_fitness, data=instance)
-    toolbox.register('select', tools.selRoulette)
+    toolbox.register('select', tools.selRandom)
 
     pop = toolbox.population(n=pop_size)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -63,9 +63,11 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
                 previous_best = part.fitness.values[0]
                 iter_num = g + 1
 
-        elite_ind = tools.selBest(pop, 1)
-        mod_pop = toolbox.select(pop, pop_size - 1)
-        # mod_pop = toolbox.select(pop, pop_size)
+        elite_ind = tools.selBest(pop, int(numpy.ceil(pop_size * 0.05)))
+        mod_pop = toolbox.select(pop, int(numpy.ceil(pop_size * 0.95))-1)
+        #elite_ind = tools.selBest(pop, 1)
+        #mod_pop = toolbox.select(pop, pop_size - 1)
+
         mod_pop = list(map(toolbox.clone, mod_pop))
 
         for part in mod_pop:
@@ -120,7 +122,7 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
 
     toolbox.register('evaluate', calculate_fitness, data=instance)
     toolbox.register('select', tools.selRoulette)
-    toolbox.register('mate', crossover_two_points)
+    toolbox.register('mate', crossover_pmx)
     toolbox.register('mutate', mutate_swap)
     pop = toolbox.population(n=pop_size)
 
