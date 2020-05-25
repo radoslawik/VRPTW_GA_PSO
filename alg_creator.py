@@ -1,7 +1,54 @@
 from core_funs import *
-from deap import base, creator, tools, algorithms
+from deap import base, creator, tools
+import matplotlib.pyplot as plt
 import numpy
 import time
+
+
+# plot data from given problem with chosen customer amount
+def plot_instance(instance_name, customer_number):
+
+    instance = load_problem_instance(instance_name)
+    depot = [instance[DEPART][COORDINATES][X_COORD], instance[DEPART][COORDINATES][Y_COORD]]
+    plt.plot(depot[0], depot[1], 'kP')
+
+    for customer_id in range(1,customer_number):
+        coordinates = [instance[F'C_{customer_id}'][COORDINATES][X_COORD],
+                       instance[F'C_{customer_id}'][COORDINATES][Y_COORD]]
+        plt.plot(coordinates[0], coordinates[1], 'ro')
+    plt.show()
+
+
+# plot the result
+def plot_route(route, instance_name):
+
+    instance = load_problem_instance(instance_name)
+    color_pack = ['bo', 'go', 'ro', 'co', 'mo', 'yo', 'ko',
+                  'b*', 'g*', 'r*', 'c*', 'm*', 'y*', 'k*',
+                  'bp', 'gp', 'rp', 'cp', 'mp', 'yp', 'kp']
+    line_color_pack = ['b', 'g', 'r', 'c', 'm', 'y', 'k',
+                       'b', 'g', 'r', 'c', 'm', 'y', 'k',
+                       'b', 'g', 'r', 'c', 'm', 'y', 'k']
+    c_ind = -1
+
+    depot = [instance[DEPART][COORDINATES][X_COORD], instance[DEPART][COORDINATES][Y_COORD]]
+    plt.plot(depot[0], depot[1], 'kP')
+    for single_route in route:
+        c_ind += 1
+        coordinates = depot
+        for customer_id in single_route:
+            prev_coords = coordinates
+            coordinates = [instance[F'C_{customer_id}'][COORDINATES][X_COORD],
+                           instance[F'C_{customer_id}'][COORDINATES][Y_COORD]]
+            plt.plot(coordinates[0], coordinates[1], color_pack[c_ind])
+            plt.arrow(prev_coords[0], prev_coords[1], coordinates[0] - prev_coords[0],
+                      coordinates[1] - prev_coords[1], color=line_color_pack[c_ind],
+                      length_includes_head=True, head_width=1, head_length=2)
+        plt.arrow(coordinates[0], coordinates[1], depot[0] - coordinates[0],
+                  depot[1] - coordinates[1], color=line_color_pack[c_ind],
+                  length_includes_head=True, head_width=1, head_length=2)
+    plt.show()
+    return
 
 
 # printing the solution
@@ -22,9 +69,15 @@ def print_route(route):
 # and then apply the original PSO algorithm.
 # The variable best contains the best particle ever found (it is known as gbest in the original algorithm).
 def run_pso(instance_name, particle_size, pop_size, max_iteration,
-            cognitive_coef, social_coef, s_limit=3):
+            cognitive_coef, social_coef, s_limit=3, plot=False):
 
     instance = load_problem_instance(instance_name)
+
+    if instance is None:
+        return
+
+    if plot:
+        plot_instance(instance_name=instance_name, customer_number=particle_size)
 
     creator.create("FitnessMax", base.Fitness, weights=(1.0,))
     creator.create("Particle", list, fitness=creator.FitnessMax, speed=list,
@@ -36,7 +89,6 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     toolbox.register("population", tools.initRepeat, list, toolbox.particle)
     toolbox.register("update", update_particle, phi1=cognitive_coef, phi2=social_coef)
     toolbox.register('evaluate', calculate_fitness, data=instance)
-    toolbox.register('select', tools.selRandom)
 
     pop = toolbox.population(n=pop_size)
     stats = tools.Statistics(lambda ind: ind.fitness.values)
@@ -57,16 +109,24 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
 
     for g in range(max_iteration):
 
+        fit_count = 0
         for part in pop:
             part.fitness.values = toolbox.evaluate(part)
             if part.fitness.values[0] > previous_best:
                 previous_best = part.fitness.values[0]
                 iter_num = g + 1
+            elif part.fitness.values[0] == previous_best:
+                fit_count += 1
 
-        elite_ind = tools.selBest(pop, int(numpy.ceil(pop_size * 0.05)))
-        mod_pop = toolbox.select(pop, int(numpy.ceil(pop_size * 0.95))-1)
-        #elite_ind = tools.selBest(pop, 1)
-        #mod_pop = toolbox.select(pop, pop_size - 1)
+        if fit_count > int(numpy.ceil(pop_size * 0.15)):
+            rand_pop = toolbox.population(n=pop_size)
+            for part in rand_pop:
+                part.fitness.values = toolbox.evaluate(part)
+            some_inds = tools.selRandom(rand_pop, int(numpy.ceil(pop_size * 0.1)))  # random pop here
+            mod_pop = tools.selWorst(pop, int(numpy.ceil(pop_size * 0.9)) - 1)
+        else :
+            some_inds = tools.selBest(pop, int(numpy.ceil(pop_size * 0.05)))  # elite pop here
+            mod_pop = tools.selRandom(pop, int(numpy.ceil(pop_size * 0.95)) - 1)
 
         mod_pop = list(map(toolbox.clone, mod_pop))
 
@@ -81,7 +141,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
         for part in mod_pop:
             toolbox.update(part, best)
 
-        mod_pop.extend(elite_ind)
+        mod_pop.extend(some_inds)
         pop[:] = mod_pop
 
         # Gather all the stats in one list and print them
@@ -99,17 +159,23 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     print(f'Found in (iteration): { iter_num }')
     print(f'Execution time (s): { end-start }')
 
+    if plot:
+        plot_route(route=route, instance_name=instance_name)
+
     return route
 
 
 # runs ga and prints the solution
 # https://deap.readthedocs.io/en/master/examples/ga_onemax.html
-def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
+def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen, plot=False):
 
     instance = load_problem_instance(instance_name)
 
     if instance is None:
         return
+
+    if plot:
+        plot_instance(instance_name=instance_name, customer_number=individual_size)
 
     creator.create('FitnessMax', base.Fitness, weights=(1.0,))
     creator.create('Individual', list, fitness=creator.FitnessMax)
@@ -195,5 +261,8 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen):
     print(f'Total cost: { calculate_fitness(best_ind, instance)[1] }')
     print(f'Found in (iteration): { iter_num }')
     print(f'Execution time (s): { end - start }')
+
+    if plot:
+        plot_route(route=route, instance_name=instance_name)
 
     return route
