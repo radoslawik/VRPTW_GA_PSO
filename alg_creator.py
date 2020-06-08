@@ -10,12 +10,15 @@ def plot_instance(instance_name, customer_number):
 
     instance = load_problem_instance(instance_name)
     depot = [instance[DEPART][COORDINATES][X_COORD], instance[DEPART][COORDINATES][Y_COORD]]
-    plt.plot(depot[0], depot[1], 'kP')
+    dep, = plt.plot(depot[0], depot[1], 'kP', label='depot')
 
     for customer_id in range(1,customer_number):
         coordinates = [instance[F'C_{customer_id}'][COORDINATES][X_COORD],
                        instance[F'C_{customer_id}'][COORDINATES][Y_COORD]]
-        plt.plot(coordinates[0], coordinates[1], 'ro')
+        custs, = plt.plot(coordinates[0], coordinates[1], 'ro', label='customers')
+    plt.ylabel("y coordinate")
+    plt.xlabel("x coordinate")
+    plt.legend([dep, custs], ['depot', 'customers'], loc=1)
     plt.show()
 
 
@@ -47,6 +50,8 @@ def plot_route(route, instance_name):
         plt.arrow(coordinates[0], coordinates[1], depot[0] - coordinates[0],
                   depot[1] - coordinates[1], color=line_color_pack[c_ind],
                   length_includes_head=True, head_width=1, head_length=2)
+    plt.ylabel("y coordinate")
+    plt.xlabel("x coordinate")
     plt.show()
     return
 
@@ -58,9 +63,9 @@ def print_route(route):
         route_num += 1
         single_route = '0'
         for customer_id in sub_route:
-            single_route = f'{single_route} - {customer_id}'
-        single_route = f'{single_route} - 0'
-        print(f' Route {route_num}: {single_route}')
+            single_route = f'{single_route} -> {customer_id}'
+        single_route = f'{single_route} -> 0'
+        print(f' # Route {route_num} # {single_route}')
 
 
 # runs the pso and prints the solution
@@ -69,7 +74,7 @@ def print_route(route):
 # and then apply the original PSO algorithm.
 # The variable best contains the best particle ever found (it is known as gbest in the original algorithm).
 def run_pso(instance_name, particle_size, pop_size, max_iteration,
-            cognitive_coef, social_coef, s_limit=3, plot=False):
+            cognitive_coef, social_coef, s_limit=3, plot=False, save=False):
 
     instance = load_problem_instance(instance_name)
 
@@ -124,7 +129,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
                 part.fitness.values = toolbox.evaluate(part)
             some_inds = tools.selRandom(rand_pop, int(numpy.ceil(pop_size * 0.1)))  # random pop here
             mod_pop = tools.selWorst(pop, int(numpy.ceil(pop_size * 0.9)) - 1)
-        else :
+        else:
             some_inds = tools.selBest(pop, int(numpy.ceil(pop_size * 0.05)))  # elite pop here
             mod_pop = tools.selRandom(pop, int(numpy.ceil(pop_size * 0.95)) - 1)
 

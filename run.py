@@ -15,13 +15,13 @@ if __name__ == '__main__':
     problem_name = str(sys.argv[1])
     alg_name = str(sys.argv[2])
 
-    customers_count = 50
-    max_generations = 500
+    customers_count = 25
+    max_generations = 2000
     
     particles_pop_size = 80
     social_acceleration = 2
     cognitive_acceleration = 2
-    speed_limit = 1.2
+    speed_limit = 3
 
     population_size = 150
     crossover_prob = 0.85

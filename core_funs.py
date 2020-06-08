@@ -53,7 +53,7 @@ def create_route_from_ind(individual, data):
 def calculate_fitness(individual, data):
 
     transport_cost = 8.0  # cost of moving 1 vehicle for 1 unit
-    vehicle_setup_cost = 20.0  # cost of adapting new vehicle
+    vehicle_setup_cost = 50.0  # cost of adapting new vehicle
     wait_penalty = 0.5  # penalty for arriving too early
     delay_penalty = 3.0  # penalty for arriving too late
 
