@@ -1,3 +1,4 @@
+
 from core_funs import *
 from deap import base, creator, tools
 import matplotlib.pyplot as plt
@@ -74,7 +75,7 @@ def print_route(route):
 # and then apply the original PSO algorithm.
 # The variable best contains the best particle ever found (it is known as gbest in the original algorithm).
 def run_pso(instance_name, particle_size, pop_size, max_iteration,
-            cognitive_coef, social_coef, s_limit=3, plot=False, save=False):
+            cognitive_coef, social_coef, s_limit=3, plot=False, save=False, logs=False):
 
     instance = load_problem_instance(instance_name)
 
@@ -128,10 +129,10 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
             for part in rand_pop:
                 part.fitness.values = toolbox.evaluate(part)
             some_inds = tools.selRandom(rand_pop, int(numpy.ceil(pop_size * 0.1)))  # random pop here
-            mod_pop = tools.selWorst(pop, int(numpy.ceil(pop_size * 0.9)) - 1)
+            mod_pop = tools.selWorst(pop, int(numpy.ceil(pop_size * 0.9)))
         else:
             some_inds = tools.selBest(pop, int(numpy.ceil(pop_size * 0.05)))  # elite pop here
-            mod_pop = tools.selRandom(pop, int(numpy.ceil(pop_size * 0.95)) - 1)
+            mod_pop = tools.selRandom(pop, int(numpy.ceil(pop_size * 0.95)))
 
         mod_pop = list(map(toolbox.clone, mod_pop))
 
@@ -159,10 +160,11 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     print(f'Best individual: {best_ind}')
     route = create_route_from_ind(best_ind, instance)
     print_route(route)
-    print(f'Fitness: {best_ind.fitness.values[0]}')
-    print(f'Total cost: { calculate_fitness(best_ind, instance)[1]}')
+    print(f'Fitness: { round(best_ind.fitness.values[0],2) }')
+    print(f'Total cost: { round(calculate_fitness(best_ind, instance)[1],2) }')
     print(f'Found in (iteration): { iter_num }')
-    print(f'Execution time (s): { end-start }')
+    print(f'Execution time (s): { round(end - start,2) }')
+    # print(f'{round(best_ind.fitness.values[0], 2)} & {round(calculate_fitness(best_ind, instance)[1],2)} & {iter_num} & {round(end - start, 2)}')
 
     if plot:
         plot_route(route=route, instance_name=instance_name)
@@ -172,7 +174,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
 
 # runs ga and prints the solution
 # https://deap.readthedocs.io/en/master/examples/ga_onemax.html
-def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen, plot=False):
+def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen, plot=False, save=False, logs=False):
 
     instance = load_problem_instance(instance_name)
 
@@ -262,10 +264,11 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen, plot=
     print(f'Best individual: {best_ind}')
     route = create_route_from_ind(best_ind, instance)
     print_route(route)
-    print(f'Fitness: { best_ind.fitness.values[0] }')
-    print(f'Total cost: { calculate_fitness(best_ind, instance)[1] }')
+    print(f'Fitness: { round(best_ind.fitness.values[0],2) }')
+    print(f'Total cost: { round(calculate_fitness(best_ind, instance)[1],2) }')
     print(f'Found in (iteration): { iter_num }')
-    print(f'Execution time (s): { end - start }')
+    print(f'Execution time (s): { round(end - start,2) }')
+    # print(f'{ round(best_ind.fitness.values[0],2) } & { round(calculate_fitness(best_ind, instance)[1],2) } & { iter_num } & { round(end - start,2) }')
 
     if plot:
         plot_route(route=route, instance_name=instance_name)

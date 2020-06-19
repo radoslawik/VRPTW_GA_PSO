@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 
 import sys
 from alg_creator import *
@@ -9,23 +8,23 @@ if __name__ == '__main__':
         print("invalid arguments")
         sys.exit()
 
-    random.seed(64)
+    random.seed(231)
     plot_result = True
 
     problem_name = str(sys.argv[1])
     alg_name = str(sys.argv[2])
 
     customers_count = 25
-    max_generations = 2000
+    max_generations = 1500
     
     particles_pop_size = 80
-    social_acceleration = 2
     cognitive_acceleration = 2
-    speed_limit = 3
+    social_acceleration = 2
+    speed_limit = 1.5
 
     population_size = 150
-    crossover_prob = 0.85
-    mutation_prob = 0.05
+    crossover_prob = 0.9
+    mutation_prob = 0.09
 
     print('### GENERAL INFO ###')
     print('Problem name: ' + problem_name)
@@ -33,6 +32,13 @@ if __name__ == '__main__':
     print(f'Max iterations: {max_generations}')
     print('Algorithm: ' + alg_name)
     print('### ALGORITHM PARAMETERS ###')
+
+    '''
+    for mutation_prob in [0.03, 0.09]:
+    for crossover_prob in [0.5, 0.7, 0.9]:
+    for speed_limit in [1.5, 3]:
+    for cognitive_acceleration, social_acceleration in [[2, 2], [1.5, 2.5], [2.5, 1.5]]:
+    '''
 
     if alg_name == "PSO":
         print(f'Particles population size: {particles_pop_size}')

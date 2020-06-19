@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-'''gavrptw/core_funs.py'''
 
 import random
 import operator
@@ -78,6 +75,7 @@ def calculate_fitness(individual, data):
 
                 # Calculate time cost
                 arrival_time = elapsed_time + distance
+
                 waiting_time = max(data[F'C_{cust_id}'][READY_TIME] - arrival_time, 0)
                 delay_time = max(arrival_time - data[F'C_{cust_id}'][DUE_TIME], 0)
                 time_cost = wait_penalty * waiting_time + delay_penalty * delay_time
