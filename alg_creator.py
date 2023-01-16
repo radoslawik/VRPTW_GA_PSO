@@ -85,7 +85,7 @@ def run_pso(instance_name, particle_size, pop_size, max_iteration,
     if plot:
         plot_instance(instance_name=instance_name, customer_number=particle_size)
 
-    creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+    creator.create("FitnessMax", base.Fitness, weights=(1.0, 1.0))
     creator.create("Particle", list, fitness=creator.FitnessMax, speed=list,
                    smin=None, smax=None, best=None)
 
@@ -184,7 +184,7 @@ def run_ga(instance_name, individual_size, pop_size, cx_pb, mut_pb, n_gen, plot=
     if plot:
         plot_instance(instance_name=instance_name, customer_number=individual_size)
 
-    creator.create('FitnessMax', base.Fitness, weights=(1.0,))
+    creator.create('FitnessMax', base.Fitness, weights=(1.0, 1.0))
     creator.create('Individual', list, fitness=creator.FitnessMax)
     toolbox = base.Toolbox()
     # Attribute generator
